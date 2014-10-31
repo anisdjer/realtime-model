@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+	<head>
+	</head>
+	<body>
+		<h1>Hello {{user.firstname}} {{user.lastname}}!</h1>
+
+		<label>Firstname</label><input data-ng-model="user.firstname"  ng-model-options="{updateOn: 'blur'}">
+
+		<label>Lastname</label><input data-ng-model="user.lastname"  ng-model-options="{updateOn: 'blur'}">
+
+		<h1>Test {{test}}!</h1>
+		<input data-ng-model="test"  ng-model-options="{updateOn: 'blur'}">
+		<script type="text/javascript" src="http://localhost:8800/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="vendors/angular/angular.min.js"></script>
+		<script type="text/javascript">
+			var app = angular.module("realtimeModel", []);
+
+			app.run(function($rootScope, $http) {
+				/*
+				var models = [
+					"user", "test"
+				];
+				angular.forEach(models, function (m) {
+					(function(model){
+						$http.post('http://localhost:8800/'  + model).then(function () {
+						var socket  = io.connect('http://localhost/'  + model)
+							socket.on("update:" + model, function (newValue) {
+								$rootScope.$apply(function(){
+									$rootScope[model] = newValue;
+								})
+							})
+							$rootScope.$watch(model, function (newValue, oldValue) {
+								console.log(oldValue)
+								console.log(newValue)
+								if(angular.equals(oldValue,newValue)) return;
+								socket.emit("update:" + model, newValue);
+							}, true)
+						})
+					}(m))
+					
+				});
+				*/
+				
+
+				$http.post('http://localhost:8800/user').then(function() {
+					var socket  = io.connect('http://localhost/user');
+					socket.on("update:user", function (newValue) {
+						$rootScope.$apply(function(){
+							$rootScope.user = newValue;
+						})
+					})
+					$rootScope.$watch("user", function (newValue, oldValue) {
+						console.log(newValue)
+						if(angular.equals(oldValue, newValue)) return;
+						socket.emit("update:user", newValue);
+					}, true)
+				})
+
+
+
+				$http.post('http://localhost:8800/test').then(function() {
+					var socket  = io.connect('http://localhost/test');
+					socket.on("update:test", function (newValue) {
+						$rootScope.$apply(function(){
+							$rootScope.test = newValue;
+						})
+					})
+					$rootScope.$watch("test", function (newValue, oldValue) {
+						console.log(newValue)
+						if(angular.equals(oldValue, newValue)) return;
+						socket.emit("update:test", newValue);
+					}, true)
+				})
+				
+			})
+			
+
+			angular.bootstrap(document.getElementsByTagName('html')[0], ["realtimeModel"]);
+		</script>
+	</body>
+</html>
